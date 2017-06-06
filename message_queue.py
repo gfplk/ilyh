@@ -28,8 +28,10 @@ class Customer(Base):
         
     def serv_forever(self, func):
         self.ch.basic_qos(prefetch_count=self.prefetch_count)
-        self.ch.queue_declare(queue=self.task_queue)
-        self.ch.queue_declare(queue=self.store_queue)
+        if self.task_queue != None:
+            self.ch.queue_declare(queue=self.task_queue, durable=self.durable)
+        if self.store_queue != None:
+            self.ch.queue_declare(queue=self.store_queue, durable=self.durable)
 
         def callback(ch, method, properties, body):
             func(body, self)
