@@ -49,6 +49,8 @@ class Producter(Base):
         self.durable = durable
 
     def sendTask(self, body):
+        if self.task_queue != None:
+            self.ch.queue_declare(queue=self.task_queue, durable=self.durable)
         self.ch.basic_publish(exchange='', routing_key=self.task_queue, body=body)
 
     def produce(self, func, func_args):
