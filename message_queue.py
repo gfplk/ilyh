@@ -1,4 +1,5 @@
 import pika
+from threading import Thread
 
 class Base(object):
     def __init__(self, user, passwd, host):
@@ -27,20 +28,21 @@ class Customer(Base):
         self.ch.basic_publish(exchange='', routing_key=self.store_queue, body=data)
         
     def serv_forever(self, func):
-        self.ch.basic_qos(prefetch_count=self.prefetch_count)
         if self.task_queue != None:
             self.ch.queue_declare(queue=self.task_queue, durable=self.durable)
         if self.store_queue != None:
             self.ch.queue_declare(queue=self.store_queue, durable=self.durable)
 
         def callback(ch, method, properties, body):
-            func(body, self)
+            t = Thread(target=func, args=(body, self))
+            t.start()
+            t.join()
             if self.no_ack == False:
                 self.ch.basic_ack(delivery_tag = method.delivery_tag)
 
+        self.ch.basic_qos(prefetch_count=self.prefetch_count)
         self.ch.basic_consume(callback, queue=self.task_queue, no_ack=self.no_ack)
         self.ch.start_consuming()
-
 
 class Producter(Base):
     def __init__(self, user, passwd, host, task_queue, durable):
@@ -49,9 +51,9 @@ class Producter(Base):
         self.durable = durable
 
     def sendTask(self, body):
-        if self.task_queue != None:
-            self.ch.queue_declare(queue=self.task_queue, durable=self.durable)
         self.ch.basic_publish(exchange='', routing_key=self.task_queue, body=body)
 
     def produce(self, func, func_args):
+        if self.task_queue != None:
+            self.ch.queue_declare(queue=self.task_queue, durable=self.durable)
         func(self, *func_args)
