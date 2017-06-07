@@ -44,6 +44,7 @@ class Customer(Base):
         self.ch.basic_consume(callback, queue=self.task_queue, no_ack=self.no_ack)
         self.ch.start_consuming()
 
+
 class Producter(Base):
     def __init__(self, user, passwd, host, task_queue, durable):
         super().__init__(user, passwd, host)
