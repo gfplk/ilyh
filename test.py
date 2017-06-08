@@ -9,15 +9,15 @@ class MessageQueueTest(unittest.TestCase):
         print(base.conn)
 
     def test_1_send(self):
-        def func(producter, *func_args):
+        def func(producter):
+            func_args = ('Love Wang Xue', 'Love someone forever')
             print(func_args)
             for i in func_args:
                 producter.sendTask(i)
 
-        func_args = ('Love Wang Xue', 'Love someone forever')
         producter = Producter('admin', '123456', 'db1.ichunt.com', 
                 'love', True)
-        producter.produce(func, func_args)
+        producter.produce(func)
 
     def test_2_customer(self):
         def func(body, customer):
@@ -26,8 +26,8 @@ class MessageQueueTest(unittest.TestCase):
 
         customer = Customer('admin', '123456', 'db1.ichunt.com', 5, True, False, 
                 'love', 'love someone forever')
-        customer.serv_forever(func)
+        customer.servForever(func)
 
 
-if __name_== '__main__':
+if __name__ == '__main__':
     unittest.main()

@@ -27,16 +27,16 @@ class Customer(Base):
     def storeData(self, data):
         self.ch.basic_publish(exchange='', routing_key=self.store_queue, body=data)
         
-    def serv_forever(self, func):
+    def servForever(self, func):
         if self.task_queue != None:
             self.ch.queue_declare(queue=self.task_queue, durable=self.durable)
         if self.store_queue != None:
             self.ch.queue_declare(queue=self.store_queue, durable=self.durable)
 
         def callback(ch, method, properties, body):
-            t = Thread(target=func, args=(body, self))
-            t.start()
-            t.join()
+            taskThread = Thread(target=func, args=(body, self))
+            taskThread.start()
+            taskThread.join()
             if self.no_ack == False:
                 self.ch.basic_ack(delivery_tag = method.delivery_tag)
 
@@ -54,7 +54,7 @@ class Producter(Base):
     def sendTask(self, body):
         self.ch.basic_publish(exchange='', routing_key=self.task_queue, body=body)
 
-    def produce(self, func, func_args):
+    def produce(self, func):
         if self.task_queue != None:
             self.ch.queue_declare(queue=self.task_queue, durable=self.durable)
-        func(self, *func_args)
+        func(self)
