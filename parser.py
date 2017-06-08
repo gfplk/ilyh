@@ -1,9 +1,7 @@
 from scrapy.selector import Selector
 import re
 
-class XpathParser(Selector):
-    def __init__(self, text):
-        super().__init__(text=text)
+XpathParser = Selector
 
 class ReParser(object):
     def __init__(self, re_text):
