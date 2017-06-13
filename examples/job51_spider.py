@@ -15,7 +15,6 @@ class Job51Spider:
         adapter = requests.adapters.HTTPAdapter(pool_connections=100, pool_maxsize=100)
         self.session.mount('http://', adapter)
         self.session.mount('https://', adapter)
-        self.session.headers.update({'Connection': 'Keep-Alive'})
 
     def index(self):
         self.visitePath.append('index')

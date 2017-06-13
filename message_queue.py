@@ -13,7 +13,7 @@ class Base(object):
         self.conn.close()
 
 
-class Task(Thread):
+class _Task(Thread):
     def __init__(self, target, args, no_ack, ch, method, properties):
         super().__init__(target=target, args=args)
         self.no_ack = no_ack
@@ -51,7 +51,7 @@ class Customer(Base):
             self.ch.queue_declare(queue=self.store_queue, durable=self.durable)
 
         def callback(ch, method, properties, body):
-            task = Task(func, (self, body), self.no_ack, ch, method, properties)
+            task = _Task(func, (self, body), self.no_ack, ch, method, properties)
             task.start()
 
         self.ch.basic_qos(prefetch_count=self.prefetch_count)

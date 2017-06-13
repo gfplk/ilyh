@@ -3,6 +3,10 @@ import time
 
 
 class MessageQueueTest:
+    def test_0_import(self):
+        from message_queue import _Task
+        print(_Task)
+
     def test_1_send(self):
         def func(producter):
             func_args = ('Love Wang Xue', 'Love someone forever')
@@ -28,5 +32,8 @@ class MessageQueueTest:
 
 if __name__ == '__main__':
     mqt = MessageQueueTest()
+    mqt.test_0_import()
+    '''
     mqt.test_1_send()
     mqt.test_2_customer()
+    '''
