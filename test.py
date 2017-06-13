@@ -1,13 +1,8 @@
-import unittest, logging
-logging.basicConfig(level=logging.DEBUG)
 from message_queue import *
+import time
 
 
-class MessageQueueTest(unittest.TestCase):
-    def test_base(self):
-        base = Base('admin', '123456', 'db1.ichunt.com')
-        print(base.conn)
-
+class MessageQueueTest:
     def test_1_send(self):
         def func(producter):
             func_args = ('Love Wang Xue', 'Love someone forever')
@@ -20,14 +15,18 @@ class MessageQueueTest(unittest.TestCase):
         producter.produce(func)
 
     def test_2_customer(self):
-        def func(body, customer):
+        def func(customer, body):
             print('Received', body)
             customer.storeData(body)
+            time.sleep(10)
+            
 
-        customer = Customer('admin', '123456', 'db1.ichunt.com', 5, True, False, 
+        customer = Customer('admin', '123456', 'ilyh.club', 5, True, False, 
                 'love', 'love someone forever')
         customer.servForever(func)
 
 
 if __name__ == '__main__':
-    unittest.main()
+    mqt = MessageQueueTest()
+    mqt.test_1_send()
+    mqt.test_2_customer()

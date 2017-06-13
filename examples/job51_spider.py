@@ -30,7 +30,7 @@ class Job51Spider:
             'Accept-Encoding': 'gzip, deflate, sdch',
             'Accept-Language': 'zh-CN,zh;q=0.8'
         }
-        r = self.session.get(url, headers=headers)
+        r = self.session.get(url, headers=headers,  allow_redirects=False)
         if r.status_code == 200:
             logging.info('%r - Access Index sucessfully!' % r.status_code)
             return r.cookies
@@ -79,7 +79,7 @@ class Job51Spider:
             'Accept-Encoding': 'gzip, deflate, sdch',
             'Accept-Language': 'zh-CN,zh;q=0.8',
         }
-        r = self.session.get(url, headers=headers, cookies=requestCookie)
+        r = self.session.get(url, headers=headers, cookies=requestCookie,  allow_redirects=False)
         if r.status_code == 200:
             logging.info('%r - Search successfully!' % r.status_code)
             r.encoding = 'gbk'
@@ -113,7 +113,7 @@ class Job51Spider:
             'Accept-Language': 'zh-CN,zh;q=0.8',
             'Referer': referer
         }
-        r = self.session.get(url, headers=headers, cookies=requestCookie)
+        r = self.session.get(url, headers=headers, cookies=requestCookie,  allow_redirects=False)
         r.encoding = 'gbk'
         if r.status_code == 200:
             if 'deliverySuccessLayer' in r.text:

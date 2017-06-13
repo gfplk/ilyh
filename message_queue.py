@@ -13,6 +13,20 @@ class Base(object):
         self.conn.close()
 
 
+class Task(Thread):
+    def __init__(self, target, args, no_ack, ch, method, properties):
+        super().__init__(target=target, args=args)
+        self.no_ack = no_ack
+        self.ch = ch
+        self.method = method
+        self.properties = properties
+
+    def run(self):
+        super().run()
+        if self.no_ack == False:
+            self.ch.basic_ack(delivery_tag = self.method.delivery_tag)
+
+
 class Customer(Base):
     def __init__(self, user, passwd, host, prefetch_count, durable, no_ack, 
             task_queue, store_queue):
@@ -24,6 +38,9 @@ class Customer(Base):
         self.durable = durable
         self.no_ack = no_ack
 
+    def sendTask(self, body):
+        self.ch.basic_publish(exchange='', routing_key=self.task_queue, body=body)
+
     def storeData(self, data):
         self.ch.basic_publish(exchange='', routing_key=self.store_queue, body=data)
         
@@ -34,11 +51,8 @@ class Customer(Base):
             self.ch.queue_declare(queue=self.store_queue, durable=self.durable)
 
         def callback(ch, method, properties, body):
-            taskThread = Thread(target=func, args=(body, self))
-            taskThread.start()
-            taskThread.join()
-            if self.no_ack == False:
-                self.ch.basic_ack(delivery_tag = method.delivery_tag)
+            task = Task(func, (self, body), self.no_ack, ch, method, properties)
+            task.start()
 
         self.ch.basic_qos(prefetch_count=self.prefetch_count)
         self.ch.basic_consume(callback, queue=self.task_queue, no_ack=self.no_ack)
