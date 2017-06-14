@@ -68,7 +68,7 @@ class Job51Spider:
 
     def search(self, keyword, requestCookie, page=1):
         self.visitePath.append('search page %r' % page)
-        url = 'http://search.51job.com/list/040000,000000,0000,00,9,99,'+keyword+',2,'+str(page)+'.html?lang=c&stype=&postchannel=0000&workyear=99&cotype=99&degreefrom=99&jobterm=99&companysize=99&providesalary=99&lonlat=0%2C0&radius=-1&ord_field=0&confirmdate=9&fromType=&dibiaoid=0&address=&line=&specialarea=00&from=&welfare='
+        url = 'http://search.51job.com/list/040000%252C030200%252C020000%252C010000,000000,0000,00,9,99,'+keyword+',2,'+str(page)+'.html?lang=c&stype=&postchannel=0000&workyear=99&cotype=99&degreefrom=99&jobterm=99&companysize=99&providesalary=99&lonlat=0%2C0&radius=-1&ord_field=0&confirmdate=9&fromType=&dibiaoid=0&address=&line=&specialarea=00&from=&welfare='
         headers = {
             'Host': 'search.51job.com',
             'Upgrade-Insecure-self.session': '1',
@@ -119,6 +119,7 @@ class Job51Spider:
                 logging.info('%r - Submit job successfully!' % r.status_code)
             elif 'deliveryHasApplyLayer' in r.text:
                 logging.info('%r - Deleivery Has Apply Layerl!' % r.status_code)
+                raise Exception(r.text)
             else:
                 logging.info('%r - Submit job fail!' % r.status_code)
                 raise Exception(r.text)
