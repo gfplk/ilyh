@@ -1,6 +1,7 @@
 import pika
 from threading import Thread
 
+
 class Base(object):
     def __init__(self, user, passwd, host):
         credentials = pika.PlainCredentials(user, passwd)
@@ -24,12 +25,12 @@ class _Task(Thread):
     def run(self):
         super().run()
         if self.no_ack == False:
-            self.ch.basic_ack(delivery_tag = self.method.delivery_tag)
+            self.ch.basic_ack(delivery_tag=self.method.delivery_tag)
 
 
 class Customer(Base):
-    def __init__(self, user, passwd, host, prefetch_count, durable, no_ack, 
-            task_queue, store_queue):
+    def __init__(self, user, passwd, host, prefetch_count, durable, no_ack,
+                 task_queue, store_queue):
         super().__init__(user, passwd, host)
 
         self.task_queue = task_queue
@@ -39,11 +40,13 @@ class Customer(Base):
         self.no_ack = no_ack
 
     def sendTask(self, body):
-        self.ch.basic_publish(exchange='', routing_key=self.task_queue, body=body)
+        self.ch.basic_publish(
+            exchange='', routing_key=self.task_queue, body=body)
 
     def storeData(self, data):
-        self.ch.basic_publish(exchange='', routing_key=self.store_queue, body=data)
-        
+        self.ch.basic_publish(
+            exchange='', routing_key=self.store_queue, body=data)
+
     def servForever(self, func):
         if self.task_queue != None:
             self.ch.queue_declare(queue=self.task_queue, durable=self.durable)
@@ -51,11 +54,13 @@ class Customer(Base):
             self.ch.queue_declare(queue=self.store_queue, durable=self.durable)
 
         def callback(ch, method, properties, body):
-            task = _Task(func, (self, body), self.no_ack, ch, method, properties)
+            task = _Task(func, (self, body), self.no_ack,
+                         ch, method, properties)
             task.start()
 
         self.ch.basic_qos(prefetch_count=self.prefetch_count)
-        self.ch.basic_consume(callback, queue=self.task_queue, no_ack=self.no_ack)
+        self.ch.basic_consume(
+            callback, queue=self.task_queue, no_ack=self.no_ack)
         self.ch.start_consuming()
 
 
@@ -66,7 +71,8 @@ class Producter(Base):
         self.durable = durable
 
     def sendTask(self, body):
-        self.ch.basic_publish(exchange='', routing_key=self.task_queue, body=body)
+        self.ch.basic_publish(
+            exchange='', routing_key=self.task_queue, body=body)
 
     def produce(self, func):
         if self.task_queue != None:

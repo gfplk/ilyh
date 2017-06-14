@@ -14,8 +14,8 @@ class MessageQueueTest:
             for i in func_args:
                 producter.sendTask(i)
 
-        producter = Producter('admin', '123456', 'db1.ichunt.com', 
-                'love', True)
+        producter = Producter('admin', '123456', 'db1.ichunt.com',
+                              'love', True)
         producter.produce(func)
 
     def test_2_customer(self):
@@ -23,10 +23,9 @@ class MessageQueueTest:
             print('Received', body)
             customer.storeData(body)
             time.sleep(10)
-            
 
-        customer = Customer('admin', '123456', 'ilyh.club', 5, True, False, 
-                'love', 'love someone forever')
+        customer = Customer('admin', '123456', 'ilyh.club', 5, True, False,
+                            'love', 'love someone forever')
         customer.servForever(func)
 
 

@@ -3,6 +3,7 @@ import re
 
 XpathParser = Selector
 
+
 class ReParser(object):
     def __init__(self, re_text):
         self.match = re.compile(re_text)
