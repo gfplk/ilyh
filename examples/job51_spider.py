@@ -62,8 +62,7 @@ class Job51Spider:
             'Accept-Encoding': 'gzip, deflate',
             'Accept-Language': 'zh-CN,zh;q=0.8',
         }
-        r = self.session.post(url, data=formData,
-                              headers=headers, cookies=requestCookie)
+        r = self.session.post(url, data=formData, headers=headers, cookies=requestCookie)
         if r.status_code == 200:
             logging.info('%r - 登录成功!' % r.status_code)
             return r.cookies
@@ -72,8 +71,7 @@ class Job51Spider:
 
     def search(self, keyword, requestCookie, page=1):
         self.visitePath.append('search page %r' % page)
-        url = 'http://search.51job.com/list/040000%252C030200%252C020000%252C010000,000000,0000,00,9,99,' + keyword + ',2,' + \
-            str(page) + '.html?lang=c&stype=&postchannel=0000&workyear=99&cotype=99&degreefrom=99&jobterm=99&companysize=99&providesalary=99&lonlat=0%2C0&radius=-1&ord_field=0&confirmdate=9&fromType=&dibiaoid=0&address=&line=&specialarea=00&from=&welfare='
+        url = 'http://search.51job.com/list/040000%252C030200%252C020000%252C010000,000000,0000,00,9,99,' + keyword + ',2,' + str(page) + '.html?lang=c&stype=&postchannel=0000&workyear=99&cotype=99&degreefrom=99&jobterm=99&companysize=99&providesalary=99&lonlat=0%2C0&radius=-1&ord_field=0&confirmdate=9&fromType=&dibiaoid=0&address=&line=&specialarea=00&from=&welfare='
         headers = {
             'Host': 'search.51job.com',
             'Upgrade-Insecure-self.session': '1',
@@ -91,8 +89,7 @@ class Job51Spider:
             xp = XpathParser(text=r.text)
             if page == 1:
                 rp = ReParser('[0-9]+')
-                numJobsHtml = xp.xpath(
-                    '//*[@id="resultList"]/div[1]/div[3]/text()').extract_first()
+                numJobsHtml = xp.xpath( '//*[@id="resultList"]/div[1]/div[3]/text()').extract_first()
                 numJobs = int(rp.compute(numJobsHtml))
                 self.numJobs = numJobs
             jobsIdHtml = xp.xpath('//div[@class="el"]/p[@class="t1 "]')[:-1]
@@ -100,8 +97,7 @@ class Job51Spider:
             for jih in jobsIdHtml:
                 jobId = jih.xpath('./input/@value').extract_first()
                 if jobId:
-                    t = threading.Thread(
-                        target=self.submitJob, args=(jobId, url, r.cookies))
+                    t = threading.Thread( target=self.submitJob, args=(jobId, url, r.cookies))
                     t.start()
                     ts.append(t)
             for t in ts:
@@ -110,8 +106,7 @@ class Job51Spider:
             raise Exception('%r - 搜索失败' % r.status_code)
 
     def submitJob(self, jobId, referer, requestCookie):
-        url = 'http://my.51job.com/my/delivery/delivery.php?rand=' + str(random.random()) + '&jsoncallback=jQuery18305740801100126356_1496936607495&jobid=(' + jobId + \
-            '%3A0)&prd=search.51job.com&prp=01&cd=search.51job.com&cp=01&resumeid=&cvlan=&coverid=&qpostset=&elementname=delivery_jobid&deliverytype=2&deliverydomain=http%3A%2F%2Fmy.51job.com&language=c&imgpath=http%3A%2F%2Fimg02.51jobcdn.com&_=1496938008708'
+        url = 'http://my.51job.com/my/delivery/delivery.php?rand=' + str(random.random()) + '&jsoncallback=jQuery18305740801100126356_1496936607495&jobid=(' + jobId + '%3A0)&prd=search.51job.com&prp=01&cd=search.51job.com&cp=01&resumeid=&cvlan=&coverid=&qpostset=&elementname=delivery_jobid&deliverytype=2&deliverydomain=http%3A%2F%2Fmy.51job.com&language=c&imgpath=http%3A%2F%2Fimg02.51jobcdn.com&_=1496938008708'
         headers = {
             'Host': 'my.51job.com',
             'User-Agent': rand_user_agent(),
@@ -120,15 +115,13 @@ class Job51Spider:
             'Accept-Language': 'zh-CN,zh;q=0.8',
             'Referer': referer
         }
-        r = self.session.get(url, headers=headers,
-                             cookies=requestCookie,  allow_redirects=False)
+        r = self.session.get(url, headers=headers, cookies=requestCookie,  allow_redirects=False)
         r.encoding = 'gbk'
         if r.status_code == 200:
             if 'deliverySuccessLayer' in r.text:
                 logging.info('%r - 简历投递成功!' % r.status_code)
             elif 'deliveryHasApplyLayer' in r.text:
-                logging.info('%r - Deleivery Has Apply Layerl!' %
-                             r.status_code)
+                logging.info('%r - Deleivery Has Apply Layerl!' % r.status_code)
                 raise Exception(r.text)
             else:
                 logging.info('%r - 简历投递失败!' % r.status_code)
