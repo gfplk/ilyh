@@ -5,8 +5,50 @@ import requests
 import random
 import threading
 import time
-logging.basicConfig(level=logging.INFO)
+import mysql.connector 
 
+MYQL_CONN = mysql.connector.connect(**{'database': 'db_job', 'user': 'gfplk', 'password': '51job_fuck', 'host': 'ilyh.club', 'charset': 'utf8'})
+
+
+class Job(dict):
+    site = ''
+    name = ''
+    company= ''
+    url = ''
+    addr = ''
+    how_much = ''
+    publish_date = ''
+
+    @classmethod
+    def add_job(cls, job):
+        global MYQL_CONN
+        cursor = None
+        try:
+            cursor = MYQL_CONN.cursor(buffered=True, dictionary=True)
+            sql = ("insert into tb_job(site, name, company, url, addr, how_much, publish_date) "
+                   "values(%(site)s,%(name)s, %(company)s, %(url)s,%(addr)s, %(how_much)s, %(publish_date)s)")
+            cursor.execute(sql, job)
+        except:
+            raise
+        finally:
+            if cursor:
+                cursor.close()
+
+    @classmethod
+    def has(cls, site, name, company):
+        global MYQL_CONN
+        cursor = None
+        try:
+            cursor = MYQL_CONN.cursor(buffered=True, dictionary=True)
+            sql = ('select id from tb_job where site=%(site)s and name=%(name)s and company=%(company)s')
+            cursor.execute(sql, job)
+            row = cursor.fetchone()
+            return row['id']
+        except:
+            return None
+        finally:
+            if cursor:
+                cursor.close()
 
 class Job51Spider:
     TruthVisitPath = ['index', 'login']
@@ -93,15 +135,26 @@ class Job51Spider:
                 numJobs = int(rp.compute(numJobsHtml))
                 self.numJobs = numJobs
             jobsIdHtml = xp.xpath('//div[@class="el"]/p[@class="t1 "]')[:-1]
-            ts = []
-            for jih in jobsIdHtml:
-                jobId = jih.xpath('./input/@value').extract_first()
+            companyHtml = xp.xpath('//div[@class="el"]/span[@class="t2"]')[:-1]
+            addrHtml = xp.xpath('//div[@class="el"]/span[@class="t3"]')[:-1]
+            moneyHtml = xp.xpath('//div[@class="el"]/span[@class="t4"]')[:-1]
+            dateHtml = xp.xpath('//div[@class="el"]/span[@class="t5"]')[:-1]
+            n = 0
+            while n < len(jobsIdHtml):
+                jobId = jobsIdHtml[n].xpath('./input/@value').extract_first()
+                job_name = jobsIdHtml[n].xpath('./span/a/@title').extract_first('')
+                company = companyHtml[n].xpath('./a/@title').extract_first('')
+                company_link = companyHtml[n].xpath('./a/@href').extract_first('')
+                addr = addrHtml[n].xpath('./text()').extract_first('')
+                money  = moneyHtml[n].xpath('./text()').extract_first('')
+                date = dateHtml[n].xpath('./text()').extract_first('')
+                print('%-25s%-25s%-20s%-10s%-10s' % (job_name, company, addr, money, date), end=' ') 
+                job = Job(site='前程无忧', name=job_name, company=company, url=company_link, addr=addr, how_much=money, publish_date=date)
+                if not Job.has('前程无忧', job_name, company):
+                    Job.add_job(job)
                 if jobId:
-                    t = threading.Thread( target=self.submitJob, args=(jobId, url, r.cookies))
-                    t.start()
-                    ts.append(t)
-            for t in ts:
-                t.join()
+                    self.submitJob(jobId, url, r.cookies)
+                n += 1
         else:
             raise Exception('%r - 搜索失败' % r.status_code)
 
@@ -118,17 +171,27 @@ class Job51Spider:
         r = self.session.get(url, headers=headers, cookies=requestCookie,  allow_redirects=False)
         r.encoding = 'gbk'
         if r.status_code == 200:
+            err = 0
             if 'deliverySuccessLayer' in r.text:
-                logging.info('%r - 简历投递成功!' % r.status_code)
+                err = 1
+                #logging.info('%r - 简历投递成功!' % r.status_code)
             elif 'deliveryHasApplyLayer' in r.text:
-                logging.info('%r - Deleivery Has Apply Layerl!' % r.status_code)
-                raise Exception(r.text)
+                err = 2
+                #logging.info('%r - 简历已经投递过了!' % r.status_code)
+                #raise Exception(r.text)
             else:
+                err = 3
                 logging.info('%r - 简历投递失败!' % r.status_code)
-                raise Exception(r.text)
+                #raise Exception(r.text)
+            if err == 0:
+                print('成功')
+            elif err == 2:
+                print('无法重复申请')
+            elif err == 3:
+                print('失败')
 
 
-if __name__ == '__main__':
+def main():
     logging.info('作为我堂堂中华IT技术宅男，找工作何须亲自动手，双击运行程序即可')
     logging.info('就是喜欢电话被打爆的感觉。')
 
@@ -149,3 +212,7 @@ if __name__ == '__main__':
         except:
             continue
         p += 1
+
+
+main()
+MYSQL_CONN.close()
