@@ -39,15 +39,15 @@ class Customer(Base):
         self.durable = durable
         self.no_ack = no_ack
 
-    def sendTask(self, body):
+    def send_task(self, body):
         self.ch.basic_publish(
             exchange='', routing_key=self.task_queue, body=body)
 
-    def storeData(self, data):
+    def store_data(self, data):
         self.ch.basic_publish(
             exchange='', routing_key=self.store_queue, body=data)
 
-    def servForever(self, func):
+    def serv_forever(self, func):
         if self.task_queue != None:
             self.ch.queue_declare(queue=self.task_queue, durable=self.durable)
         if self.store_queue != None:
@@ -70,7 +70,7 @@ class Producter(Base):
         self.task_queue = task_queue
         self.durable = durable
 
-    def sendTask(self, body):
+    def send_task(self, body):
         self.ch.basic_publish(
             exchange='', routing_key=self.task_queue, body=body)
 
