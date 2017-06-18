@@ -3,6 +3,9 @@ from threading import Thread
 
 
 class Base(object):
+    '''
+    生产者消费者基类
+    '''
     def __init__(self, user, passwd, host):
         credentials = pika.PlainCredentials(user, passwd)
         self.conn = pika.BlockingConnection(pika.ConnectionParameters(
@@ -15,6 +18,9 @@ class Base(object):
 
 
 class _Task(Thread):
+    '''
+    任务线程类
+    '''
     def __init__(self, target, args, no_ack, ch, method, properties):
         super().__init__(target=target, args=args)
         self.no_ack = no_ack
@@ -29,6 +35,9 @@ class _Task(Thread):
 
 
 class Customer(Base):
+    '''
+    消费者
+    '''
     def __init__(self, user, passwd, host, prefetch_count, durable, no_ack,
                  task_queue, store_queue):
         super().__init__(user, passwd, host)
@@ -65,6 +74,9 @@ class Customer(Base):
 
 
 class Producter(Base):
+    '''
+    生产者
+    '''
     def __init__(self, user, passwd, host, task_queue, durable):
         super().__init__(user, passwd, host)
         self.task_queue = task_queue
