@@ -5,6 +5,7 @@ import logging
 import time
 
 __POOL = []
+__LOCK = Lock()
 
 
 class DBConnection(dict):
@@ -31,9 +32,6 @@ def close_pool():
         raise
 
 
-__LOCK = Lock()
-
-
 def get_connection():
     global __POOL, __LOCK
     with __LOCK:
@@ -42,8 +40,8 @@ def get_connection():
                 if conn['is_used'] == False:
                     conn['is_used'] = True
                     return conn
-            logging.debug('%r - waiting for other thread release the connection.' % current_thread())
-            time.sleep(2)
+            logging.debug(
+                '%r - waiting for other thread release the connection.' % current_thread())
 
 
 def select(sql, args, size=None):
@@ -63,8 +61,7 @@ def select(sql, args, size=None):
     except:
         raise
     finally:
-        with __LOCK:
-            conn['is_used'] = False
+        conn['is_used'] = False
 
 
 def execute(sql, args):
@@ -73,27 +70,23 @@ def execute(sql, args):
     try:
         with conn['connection'].cursor() as cursor:
             cursor.execute(sql.replace('?', '%s'), args or ())
+            conn['connection'].commit()
             affected = cursor.rowcount
             return affected
     except:
-        conn.rollback()
+        conn['connection'].rollback()
         raise
     finally:
-        with __LOCK:
-            conn['is_used'] = False
+        conn['is_used'] = False
 
 
-class Field(object):
-    def __init__(self, name, column_type, primary_key, default):
+class Field:
+    def __init__(self, name, size, default, comment):
         self.name = name
-        self.column_type = column_type
-        self.primary_key = primary_key
+        self.size = size
         self.default = default
-
-    def __str__(self):
-        return '<%s, %s:%s>' % (self.__class__.__name__, self.column_type, self.name)
+        self.comment = comment
 
 
-class StringField(Field):
-    def __init__(self, name=None, primary_key=False, default=None, ddl='varchar(100'):
-        super().__init__(name, ddl, primary_key, default)
+class BitField(Field):
+    pass
