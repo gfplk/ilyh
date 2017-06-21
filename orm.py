@@ -3,6 +3,8 @@ import pymysql
 from pymysql import Connection
 import logging
 import time
+from enum import Enum
+
 
 __POOL = []
 __LOCK = Lock()
@@ -79,14 +81,22 @@ def execute(sql, args):
     finally:
         conn['is_used'] = False
 
+class Database:
+    def __init__(self, name):
+        self.name = name
+
+
+class Table:
+    def __init__(self, name):
+        self.name = name
+
+class ColumnType(Enum):
+    pass
 
 class Field:
-    def __init__(self, name, size, default, comment):
+    def __init__(self, name, column_type, size, default, comment):
         self.name = name
+        self.column_type = column_type
         self.size = size
         self.default = default
         self.comment = comment
-
-
-class BitField(Field):
-    pass
