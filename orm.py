@@ -81,17 +81,21 @@ def execute(sql, args):
     finally:
         conn['is_used'] = False
 
+
 class Database:
     def __init__(self, name):
         self.name = name
 
 
 class Table:
-    def __init__(self, name):
+    def __init__(self, name, engine, *fields):
         self.name = name
+        self.engine = engine
+
 
 class ColumnType(Enum):
     pass
+
 
 class Field:
     def __init__(self, name, column_type, size, default, comment):
