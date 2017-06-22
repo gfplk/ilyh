@@ -6,6 +6,7 @@ class Base(object):
     '''
     生产者消费者基类
     '''
+
     def __init__(self, user, passwd, host):
         credentials = pika.PlainCredentials(user, passwd)
         self.conn = pika.BlockingConnection(pika.ConnectionParameters(
@@ -21,6 +22,7 @@ class _Task(Thread):
     '''
     任务线程类
     '''
+
     def __init__(self, target, args, no_ack, ch, method, properties):
         super().__init__(target=target, args=args)
         self.no_ack = no_ack
@@ -38,6 +40,7 @@ class Customer(Base):
     '''
     消费者
     '''
+
     def __init__(self, user, passwd, host, prefetch_count, durable, no_ack,
                  task_queue, store_queue):
         super().__init__(user, passwd, host)
@@ -50,11 +53,13 @@ class Customer(Base):
 
     def send_task(self, body):
         self.ch.basic_publish(
-            exchange='', routing_key=self.task_queue, body=body)
+            exchange='', routing_key=self.task_queue, properties=pika.BasicProperties(
+                delivery_mode=2), body=body)
 
     def store_data(self, data):
         self.ch.basic_publish(
-            exchange='', routing_key=self.store_queue, body=data)
+            exchange='', routing_key=self.store_queue, properties=pika.BasicProperties(
+                delivery_mode=2), body=data)
 
     def serv_forever(self, func):
         if self.task_queue != None:
@@ -77,6 +82,7 @@ class Producter(Base):
     '''
     生产者
     '''
+
     def __init__(self, user, passwd, host, task_queue, durable):
         super().__init__(user, passwd, host)
         self.task_queue = task_queue
@@ -84,7 +90,8 @@ class Producter(Base):
 
     def send_task(self, body):
         self.ch.basic_publish(
-            exchange='', routing_key=self.task_queue, body=body)
+            exchange='', routing_key=self.task_queue, properties=pika.BasicProperties(
+                delivery_mode=2), body=body)
 
     def produce(self, func):
         if self.task_queue != None:
